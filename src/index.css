@@ -1,0 +1,134 @@
+@import 'tailwindcss';
+
+/* ── Petroflow design tokens ─────────────────────────────────────────────── */
+
+:root {
+  --brand: #00b050;
+  --brand-hover: #009a48;
+  --brand-text: #00a249;
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+}
+
+:root,
+[data-theme='light'] {
+  --header: #ffffff;
+  --canvas: #f0f0f1;
+  --surface: #ffffff;
+  --fg: #1e1e1e;
+  --fg-muted: #5c5c62;
+  --border: #d4cdd0;
+  --code-bg: #eaeaec;
+  --brand-bg: rgba(0, 176, 80, 0.1);
+  --brand-border: rgba(0, 176, 80, 0.45);
+  --social-bg: rgba(255, 255, 255, 0.8);
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --header: #2d2d30;
+  --canvas: #2d2d30;
+  --surface: #36363a;
+  --fg: #fafafa;
+  --fg-muted: #b0b0b5;
+  --border: #58474c;
+  --code-bg: #2a2a2e;
+  --brand-bg: rgba(0, 176, 80, 0.15);
+  --brand-border: rgba(0, 176, 80, 0.5);
+  --social-bg: rgba(54, 54, 58, 0.6);
+  --shadow:
+    rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-text: var(--brand-text);
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-border: var(--brand-border);
+  --color-header: var(--header);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-border: var(--border);
+  --color-code-bg: var(--code-bg);
+  --color-social-bg: var(--social-bg);
+
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+
+  --shadow-elevation: var(--shadow);
+}
+
+@layer base {
+  body {
+    @apply m-0 min-h-svh bg-canvas font-sans text-[18px] leading-[145%] tracking-[0.18px] text-fg-muted antialiased;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  @media (max-width: 1024px) {
+    body {
+      @apply text-base;
+    }
+  }
+
+  #root {
+    @apply box-border flex h-svh min-h-svh w-full flex-col bg-canvas;
+  }
+
+  h1,
+  h2 {
+    @apply font-heading font-medium text-fg;
+  }
+
+  h1 {
+    @apply my-8 text-[56px] tracking-[-1.68px] lg:my-5 lg:text-4xl;
+  }
+
+  h2 {
+    @apply mb-2 text-2xl leading-[118%] tracking-[-0.24px] lg:text-xl;
+  }
+
+  p {
+    @apply m-0;
+  }
+
+  code {
+    @apply inline-flex rounded bg-code-bg px-2 py-1 font-mono text-[15px] leading-[135%] text-fg;
+  }
+}
+
+@layer utilities {
+  .bg-auth-hero {
+    background:
+      radial-gradient(ellipse 90% 70% at 85% 15%, rgba(0, 176, 80, 0.42), transparent 55%),
+      radial-gradient(ellipse 70% 55% at 10% 85%, rgba(0, 120, 55, 0.35), transparent 50%),
+      radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0, 154, 72, 0.2), transparent 60%),
+      linear-gradient(160deg, #005c30 0%, #004225 38%, #002a18 72%, #001a10 100%);
+  }
+
+  .auth-hero-sheen {
+    background:
+      linear-gradient(
+        125deg,
+        rgba(255, 255, 255, 0.14) 0%,
+        rgba(255, 255, 255, 0.04) 28%,
+        transparent 52%,
+        rgba(0, 0, 0, 0.08) 100%
+      );
+  }
+
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}
