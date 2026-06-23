@@ -3,6 +3,10 @@ import AdminClientsPage from './pages/admin/AdminClientsPage.jsx'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage.jsx'
 import AdminRecentOrdersPage from './pages/admin/AdminRecentOrdersPage.jsx'
+import {
+  AdminRecentImportDetailPage,
+  AdminRecentProductionDetailPage,
+} from './pages/admin/AdminRecentOrderDetailPage.jsx'
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx'
 import ImporterDashboardPage from './pages/ImporterDashboardPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
@@ -21,6 +25,14 @@ function App() {
       <Route path="/dashboard-admin/progress" element={<Navigate to="/dashboard-admin/recent-orders" replace />} />
       <Route path="/dashboard-admin/recent-projects" element={<Navigate to="/dashboard-admin/recent-orders" replace />} />
       <Route path="/dashboard-admin/recent-orders" element={<AdminRecentOrdersPage />} />
+      <Route
+        path="/dashboard-admin/recent-orders/production/:orderId"
+        element={<AdminRecentProductionDetailPage />}
+      />
+      <Route
+        path="/dashboard-admin/recent-orders/imported/:entryId"
+        element={<AdminRecentImportDetailPage />}
+      />
       <Route path="/dashboard-admin/users" element={<AdminUsersPage />} />
       <Route path="/dashboard-production" element={<ProductionDashboardPage />} />
       <Route path="/dashboard-importer" element={<ImporterDashboardPage />} />

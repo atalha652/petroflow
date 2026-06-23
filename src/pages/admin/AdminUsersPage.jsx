@@ -1,8 +1,23 @@
+import { useState } from 'react'
+import AddUserModal from '../../components/dashboard/AddUserModal.jsx'
 import DashboardLayout from '../../components/dashboard/DashboardLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
 import { mockUsers } from '../../data/mockAdmin.js'
 
 export default function AdminUsersPage() {
+  const [users, setUsers] = useState(mockUsers)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+
+  function handleAddUser(user) {
+    setUsers((current) => [
+      ...current,
+      {
+        ...user,
+        id: Math.max(...current.map((entry) => entry.id), 0) + 1,
+      },
+    ])
+  }
+
   return (
     <DashboardLayout
       role="admin"
@@ -12,9 +27,13 @@ export default function AdminUsersPage() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="m-0 text-sm text-fg-muted">
-            {mockUsers.length} users registered
+            {users.length} users registered
           </p>
-          <Button type="button" className="w-full sm:w-auto sm:max-w-[160px]">
+          <Button
+            type="button"
+            className="w-full sm:w-auto sm:max-w-[160px]"
+            onClick={() => setIsAddModalOpen(true)}
+          >
             Add user
           </Button>
         </div>
@@ -29,7 +48,7 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody>
-              {mockUsers.map((user) => (
+              {users.map((user) => (
                 <tr
                   key={user.id}
                   className="border-b border-border last:border-b-0 hover:bg-canvas/50"
@@ -43,6 +62,12 @@ export default function AdminUsersPage() {
           </table>
         </div>
       </div>
+
+      <AddUserModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onCreate={handleAddUser}
+      />
     </DashboardLayout>
   )
 }

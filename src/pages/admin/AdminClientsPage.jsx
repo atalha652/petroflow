@@ -1,8 +1,23 @@
+import { useState } from 'react'
+import AddClientModal from '../../components/dashboard/AddClientModal.jsx'
 import DashboardLayout from '../../components/dashboard/DashboardLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
 import { mockClients } from '../../data/mockAdmin.js'
 
 export default function AdminClientsPage() {
+  const [clients, setClients] = useState(mockClients)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+
+  function handleAddClient(client) {
+    setClients((current) => [
+      ...current,
+      {
+        ...client,
+        id: Math.max(...current.map((entry) => entry.id), 0) + 1,
+      },
+    ])
+  }
+
   return (
     <DashboardLayout
       role="admin"
@@ -12,9 +27,13 @@ export default function AdminClientsPage() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="m-0 text-sm text-fg-muted">
-            {mockClients.length} clients registered
+            {clients.length} clients registered
           </p>
-          <Button type="button" className="w-full sm:w-auto sm:max-w-[160px]">
+          <Button
+            type="button"
+            className="w-full sm:w-auto sm:max-w-[160px]"
+            onClick={() => setIsAddModalOpen(true)}
+          >
             Add client
           </Button>
         </div>
@@ -29,7 +48,7 @@ export default function AdminClientsPage() {
               </tr>
             </thead>
             <tbody>
-              {mockClients.map((client) => (
+              {clients.map((client) => (
                 <tr
                   key={client.id}
                   className="border-b border-border last:border-b-0 hover:bg-canvas/50"
@@ -43,6 +62,12 @@ export default function AdminClientsPage() {
           </table>
         </div>
       </div>
+
+      <AddClientModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onCreate={handleAddClient}
+      />
     </DashboardLayout>
   )
 }

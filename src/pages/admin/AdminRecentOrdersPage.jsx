@@ -1,39 +1,40 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { GiOilPump, GiShipWheel } from 'react-icons/gi'
 import { RiSearchLine } from 'react-icons/ri'
 import DashboardLayout from '../../components/dashboard/DashboardLayout.jsx'
 import ProgressItemCard from '../../components/dashboard/ProgressItemCard.jsx'
 import { getProgressImage } from '../../data/progressImages.js'
 import {
-  formatCurrency,
   getStageProgress,
   mockImportEntries,
   mockOrders,
 } from '../../data/mockOrders.js'
+import {
+  formatStageLabel,
+  getOrderCardBadge,
+  getOrderCardProgressVariant,
+  getOrderCardTimeLabel,
+} from '../../data/orderStages.js'
+import {
+  formatImportStageLabel,
+  getImportCardBadge,
+  getImportCardProgressVariant,
+  getImportCardTimeLabel,
+  getImportStageProgress,
+  normalizeImportProgress,
+} from '../../data/importStages.js'
 
 const tabs = [
   { id: 'production', label: 'Production' },
   { id: 'imported', label: 'Imported' },
 ]
 
-function getOrderBadge(status) {
-  if (status === 'Completed') return null
-  if (status === 'Not Started') return 'Not started'
-  return 'In progress'
+function getImportProgressVariant(entry) {
+  return getImportCardProgressVariant(normalizeImportProgress(entry))
 }
 
-function getOrderProgressVariant(status) {
-  if (status === 'Completed') return 'complete'
-  if (status === 'Not Started') return 'pending'
-  return 'active'
-}
-
-function getImportProgressVariant(entry, order) {
-  if (order?.status === 'Completed') return 'complete'
-  return 'active'
-}
-
-function ProductionTab({ searchQuery }) {
+function ProductionTab({ searchQuery, onSelectOrder }) {
   const filteredOrders = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
     if (!query) return mockOrders
@@ -59,7 +60,6 @@ function ProductionTab({ searchQuery }) {
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {filteredOrders.map((order) => {
         const progress = getStageProgress(order)
-        const progressVariant = getOrderProgressVariant(order.status)
 
         return (
           <ProgressItemCard
@@ -67,19 +67,14 @@ function ProductionTab({ searchQuery }) {
             imageSrc={getProgressImage(order.id - 1)}
             icon={GiOilPump}
             title={`${order.client} — ${order.location.split(',')[0]}`}
-            badge={getOrderBadge(order.status)}
-            progressLabel={`${String(order.stagesComplete).padStart(2, '0')}/${String(order.stagesTotal).padStart(2, '0')} Stages · ${order.currentStage}`}
-            timeLeft={
-              order.status === 'Completed'
-                ? 'Complete'
-                : order.lastProductionUpdate === '—'
-                  ? 'Not started'
-                  : order.lastProductionUpdate
-            }
-            metaPrimary={`Site order • Updated ${order.lastProductionUpdate}`}
+            badge={getOrderCardBadge(order)}
+            progressLabel={`${String(order.stagesComplete).padStart(2, '0')}/${String(order.stagesTotal).padStart(2, '0')} Substages · ${formatStageLabel(order.currentStage)}`}
+            timeLeft={getOrderCardTimeLabel(order)}
+            metaPrimary={`${getOrderCardBadge(order)} phase • Updated ${order.lastProductionUpdate}`}
             metaSecondary={`#${order.orderNumber} · ${order.scheduledTime} · ${progress}% complete`}
             members={[order.productionUser, order.importerUser].filter(Boolean)}
-            progressVariant={progressVariant}
+            progressVariant={getOrderCardProgressVariant(order)}
+            onClick={() => onSelectOrder?.(order)}
           />
         )
       })}
@@ -87,7 +82,7 @@ function ProductionTab({ searchQuery }) {
   )
 }
 
-function ImportedTab({ searchQuery }) {
+function ImportedTab({ searchQuery, onSelectEntry }) {
   const ordersById = useMemo(
     () => Object.fromEntries(mockOrders.map((order) => [order.id, order])),
     [],
@@ -120,7 +115,8 @@ function ImportedTab({ searchQuery }) {
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {filteredEntries.map((entry) => {
         const order = ordersById[entry.orderId]
-        const progressVariant = getImportProgressVariant(entry, order)
+        const importProgress = normalizeImportProgress(entry)
+        const progress = getImportStageProgress(importProgress)
 
         return (
           <ProgressItemCard
@@ -128,17 +124,18 @@ function ImportedTab({ searchQuery }) {
             imageSrc={getProgressImage(entry.orderId - 1)}
             icon={GiShipWheel}
             title={entry.itemName}
-            badge={order?.status === 'Completed' ? null : 'Import log'}
-            progressLabel={`${entry.quantity} Units · ${formatCurrency(entry.totalCost)}`}
-            timeLeft={order?.lastImportUpdate ?? entry.date}
-            metaPrimary={`${entry.supplier} • Logged ${entry.date}`}
+            badge={getImportCardBadge(importProgress)}
+            progressLabel={`${String(importProgress.stagesComplete).padStart(2, '0')}/${String(importProgress.stagesTotal).padStart(2, '0')} Substages · ${formatImportStageLabel(importProgress.currentStage)}`}
+            timeLeft={getImportCardTimeLabel(importProgress)}
+            metaPrimary={`${entry.supplier} • ${getImportCardBadge(importProgress)} phase`}
             metaSecondary={
               order
-                ? `#${order.orderNumber} · ${order.client} · ${order.location}`
+                ? `#${order.orderNumber} · ${order.client} · ${progress}% complete`
                 : `Order ${entry.orderId}`
             }
             members={order?.importerUser ? [order.importerUser, order.productionUser] : []}
-            progressVariant={progressVariant}
+            progressVariant={getImportProgressVariant(entry)}
+            onClick={() => onSelectEntry?.(entry)}
           />
         )
       })}
@@ -147,6 +144,7 @@ function ImportedTab({ searchQuery }) {
 }
 
 export default function AdminRecentOrdersPage() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('production')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -196,9 +194,19 @@ export default function AdminRecentOrdersPage() {
         </div>
 
         {activeTab === 'production' ? (
-          <ProductionTab searchQuery={searchQuery} />
+          <ProductionTab
+            searchQuery={searchQuery}
+            onSelectOrder={(order) =>
+              navigate(`/dashboard-admin/recent-orders/production/${order.id}`)
+            }
+          />
         ) : (
-          <ImportedTab searchQuery={searchQuery} />
+          <ImportedTab
+            searchQuery={searchQuery}
+            onSelectEntry={(entry) =>
+              navigate(`/dashboard-admin/recent-orders/imported/${entry.id}`)
+            }
+          />
         )}
       </div>
     </DashboardLayout>

@@ -1,108 +1,15 @@
 import {
-  RiCalendarLine,
   RiCheckLine,
   RiEyeLine,
   RiFileTextLine,
-  RiTimeLine,
+  RiPencilLine,
 } from 'react-icons/ri'
-import { formatOrderAmount, getOrderTotal } from '../../data/mockOrders.js'
+import AdminOrderDetailsContent from './AdminOrderDetailsContent.jsx'
 
-function getClientInitials(name) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
-}
-
-function getStatusBadge(status) {
-  if (status === 'Completed') {
-    return {
-      label: 'Completed',
-      className: 'bg-brand/15 text-brand-text',
-    }
-  }
-  if (status === 'In Progress') {
-    return {
-      label: 'In Progress',
-      className: 'bg-brand/10 text-brand-text',
-    }
-  }
-  return {
-    label: 'Initialized',
-    className: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
-  }
-}
-
-function DetailCell({ label, value }) {
-  return (
-    <div className="min-w-0">
-      <p className="m-0 text-[11px] leading-tight text-fg-muted">{label}</p>
-      <p className="mt-1 m-0 break-words text-sm font-medium leading-snug text-fg">
-        {value}
-      </p>
-    </div>
-  )
-}
-
-function InfoBox({ icon: Icon, label, value }) {
-  return (
-    <div className="flex min-h-[4.5rem] rounded-xl bg-canvas px-3 py-2.5">
-      <div className="flex min-w-0 items-start gap-2">
-        <Icon className="mt-0.5 shrink-0 text-brand-text" size={16} aria-hidden="true" />
-        <div className="min-w-0">
-          <p className="m-0 text-[11px] leading-tight text-fg-muted">{label}</p>
-          <p className="mt-1 m-0 break-words text-sm font-medium leading-snug text-fg">
-            {value}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default function AdminOrderCard({ order }) {
-  const total = getOrderTotal(order)
-  const badge = getStatusBadge(order.status)
-  const itemCount = order.items?.length ?? 0
-
+export default function AdminOrderCard({ order, onEdit, onShowDetails }) {
   return (
     <article className="flex h-full flex-col rounded-2xl border border-border bg-surface p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-bg text-sm font-bold text-brand-text">
-          {getClientInitials(order.client)}
-        </span>
-        <span
-          className={`inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${badge.className}`}
-        >
-          {badge.label}
-        </span>
-      </div>
-
-      <div className="mt-3 min-w-0 text-left">
-        <h3 className="m-0 text-base font-semibold leading-snug text-fg">{order.name}</h3>
-        <p className="mt-1 m-0 text-sm leading-relaxed text-fg-muted">
-          {itemCount} scope items · {order.client}
-        </p>
-        <p className="mt-1 m-0 text-xs leading-relaxed text-fg-muted">
-          Created on: {order.orderTime}
-        </p>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <InfoBox icon={RiCalendarLine} label="Scheduled date" value={order.scheduledTime} />
-        <InfoBox icon={RiTimeLine} label="Current stage" value={order.currentStage} />
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4">
-        <DetailCell label="Fulfillment" value={order.fulfillmentMode} />
-        <DetailCell label="Production lead" value={order.productionUser} />
-        <DetailCell label="Total amount" value={formatOrderAmount(total)} />
-        <DetailCell label="Importer" value={order.importerUser} />
-        <DetailCell label="Budget type" value={order.budgetType} />
-        <DetailCell label="Site location" value={order.location} />
-      </div>
+      <AdminOrderDetailsContent order={order} />
 
       {order.status === 'In Progress' ? (
         <div className="mt-4">
@@ -139,6 +46,15 @@ export default function AdminOrderCard({ order }) {
           </button>
           <button
             type="button"
+            onClick={() => onEdit?.(order)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-fg transition-colors hover:border-brand-border hover:text-brand-text"
+          >
+            <RiPencilLine size={14} aria-hidden="true" />
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => onShowDetails?.(order)}
             className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-fg transition-colors hover:border-brand-border hover:text-brand-text"
           >
             <RiEyeLine size={14} aria-hidden="true" />

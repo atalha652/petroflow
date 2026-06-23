@@ -36,16 +36,37 @@ export default function ProgressItemCard({
   imageSrc,
   icon: Icon,
   progressVariant = 'active',
+  onClick,
 }) {
-  const progressBarClass =
+  const isClickable = Boolean(onClick)
+
+  const accentClass =
     progressVariant === 'complete'
       ? 'bg-brand text-white'
       : progressVariant === 'pending'
         ? 'bg-code-bg text-fg-muted'
         : 'bg-amber-400 text-[#1a1a1a]'
 
+  function handleKeyDown(event) {
+    if (!onClick) return
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onClick()
+    }
+  }
+
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow hover:shadow-md">
+    <article
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      className={`overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-shadow ${
+        isClickable
+          ? 'cursor-pointer hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
+          : 'hover:shadow-md'
+      }`}
+    >
       <div className="relative aspect-[16/10] overflow-hidden bg-code-bg">
         {imageSrc ? (
           <img src={imageSrc} alt="" className="h-full w-full object-cover" />
@@ -56,14 +77,16 @@ export default function ProgressItemCard({
         )}
 
         {badge ? (
-          <span className="absolute right-3 top-3 rounded-md bg-orange-500 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+          <span
+            className={`absolute right-3 top-3 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${accentClass}`}
+          >
             {badge}
           </span>
         ) : null}
       </div>
 
       <div
-        className={`flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold ${progressBarClass}`}
+        className={`flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold ${accentClass}`}
       >
         <span className="truncate">{progressLabel}</span>
         <span className="shrink-0">{timeLeft}</span>
@@ -76,6 +99,7 @@ export default function ProgressItemCard({
           </h3>
           <button
             type="button"
+            onClick={(event) => event.stopPropagation()}
             className="shrink-0 rounded-lg p-1 text-fg-muted transition-colors hover:bg-canvas hover:text-fg"
             aria-label="More options"
           >
